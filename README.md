@@ -1,100 +1,50 @@
-# UNeXt
+### TODO
 
-Official Pytorch Code base for [UNeXt: MLP-based Rapid Medical Image Segmentation Network](https://arxiv.org/abs/2203.04967), MICCAI 2022
+MLP-Mixer´î½¨²âÊÔ¡£
 
-[Paper](https://arxiv.org/abs/2203.04967) | [Project](https://jeya-maria-jose.github.io/UNext-web/)
+½«Êä³ö¸²¸Çµ½Ô­Í¼/ÊäÈëµÄmaskÍ¼ÉÏ¡££¨ÐÞ¸Äpost_process.py)
 
-## Introduction
+´¦Àí¹Ç÷ÀÆ¬Êý¾Ý¸ñÊ½¡£
 
-UNet and its latest extensions like TransUNet have been the leading medical image segmentation methods in recent years. However, these networks cannot be effectively adopted for rapid image segmentation in point-of-care applications as they are parameter-heavy, computationally complex and slow to use.  To this end, we propose UNeXt which is a Convolutional multilayer perceptron (MLP) based network for image segmentation. We design UNeXt in an effective way with an early convolutional stage and a MLP stage in the latent stage. We propose a tokenized MLP block where we efficiently tokenize and project the convolutional features and use MLPs to model the representation. To further boost the performance, we propose shifting the channels of the inputs while feeding in to MLPs so as to focus on learning local dependencies. Using tokenized MLPs in latent space reduces the number of parameters and computational complexity while being able to result in a better representation to help segmentation. The network also consists of skip connections between various levels of encoder and decoder.   We test UNeXt on multiple medical image segmentation datasets and show that we reduce the number of parameters by 72x, decrease the computational complexity by 68x, and improve the inference speed by 10x while also obtaining better segmentation performance over the  state-of-the-art medical image segmentation architectures.
+Ñ¡Æ¬±ê×¢£¬ÓÃÐÂµÄÊý¾ÝÑµÁ·¡£
 
-<p align="center">
-  <img src="imgs/unext.png" width="800"/>
-</p>
+early-stopping?
 
+### nb!
 
-## Using the code:
+ÐèÒªÊÖ¶¯·Ö¸îÑµÁ·¼¯ºÍ²âÊÔ¼¯¡£
 
-The code is stable while using Python 3.6.13, CUDA >=10.1
+Êý¾Ý¼¯ÖÐÒÔ4:1µÄ±ÈÀý»®·ÖÑµÁ·¼¯ºÍ²âÊÔ¼¯¡£
 
-- Clone this repository:
-```bash
-git clone https://github.com/jeya-maria-jose/UNeXt-pytorch
-cd UNeXt-pytorch
-```
+ÑµÁ·¼¯ÖÐÒÔ3:1µÄ±ÈÀý»®·Ötrain:validate¡£
 
-To install all the dependencies using conda:
+Ä£ÐÍÎ»ÓÚarchs.py¡£
 
-```bash
-conda env create -f environment.yml
-conda activate unext
-```
+ÑµÁ·½áÊøºó£¬ÐèÒªÔÚ²âÊÔÖ®Ç°ÐÞ¸ÄÏàÓ¦modelµÄymlÎÄ¼þ£¬½«dataset¸ÄÎª¶ÔÓ¦µÄ²âÊÔ¼¯datasetÃû³Æ¡£
 
-If you prefer pip, install following versions:
+### RESULTS
 
-```bash
-timm==0.3.2
-mmcv-full==1.2.7
-torch==1.7.1
-torchvision==0.8.2
-opencv-python==4.5.1.48
-```
+| Name | Model | Epochs | dataset | Time cost | IoU | Dice |
+|-------|:---------:|:------:|------:|------:|------:|------:|
+| exp0 | UneXt | 500 | pancreas | 125min | 0.7168 | 0.8326 |
+| exp1 | UneXt | 100 | pancreas | 25min | 0.6752 | 0.8019 |
+| exp2 | UneXt_S | 500 | pancreas | 98min | 0.7101 | 0.8285 |
+| exp3 | Unet | 100 | pancreas | 197min | 0.6603 | 0.7759 |
+| exp4 | Unet | 500 | pancreas | 
+| exp5 | MLP-Mixer |
 
-## Datasets
+### Commands
 
-1) ISIC 2018 - [Link](https://challenge.isic-archive.com/data/)
-2) BUSI - [Link](https://www.kaggle.com/aryashah2k/breast-ultrasound-images-dataset)
+exp0:python train.py --dataset pancreas --arch UNext --name exp0 --img_ext .png --mask_ext .png --lr 0.0001 --epochs 500 --input_w 512 --input_h 512 --b 8 --input_channels 1
 
-## Data Format
+exp1:python train.py --dataset pancreas --arch UNext --name exp1 --img_ext .png --mask_ext .png --lr 0.0001 --epochs 100 --input_w 512 --input_h 512 --b 8 --input_channels 1
 
-Make sure to put the files as the following structure (e.g. the number of classes is 2):
+exp2:python train.py --dataset pancreas --arch UNext_S --name exp2 --img_ext .png --mask_ext .png --lr 0.0001 --epochs 500 --input_w 512 --input_h 512 --b 8 --input_channels 1
 
-```
-inputs
-â””â”€â”€ <dataset name>
-    â”œâ”€â”€ images
-    |   â”œâ”€â”€ 001.png
-    â”‚   â”œâ”€â”€ 002.png
-    â”‚   â”œâ”€â”€ 003.png
-    â”‚   â”œâ”€â”€ ...
-    |
-    â””â”€â”€ masks
-        â”œâ”€â”€ 0
-        |   â”œâ”€â”€ 001.png
-        |   â”œâ”€â”€ 002.png
-        |   â”œâ”€â”€ 003.png
-        |   â”œâ”€â”€ ...
-        |
-        â””â”€â”€ 1
-            â”œâ”€â”€ 001.png
-            â”œâ”€â”€ 002.png
-            â”œâ”€â”€ 003.png
-            â”œâ”€â”€ ...
-```
+exp3:python train.py --dataset pancreas --arch Unet --name exp3 --img_ext .png --mask_ext .png --lr 0.0001 --epochs 100 --input_w 512 --input_h 512 --b 8 --batch_size 4
 
-For binary segmentation problems, just use folder 0.
+exp4:python train.py --dataset pancreas --arch Unet --name exp4 --img_ext .png --mask_ext .png --lr 0.0001 --epochs 500 --input_w 512 --input_h 512 --b 8 --batch_size 4
 
-## Training and Validation
+exp5:python train.py --dataset pancreas --arch MLPMixer --name exp5 --img_ext .png --mask_ext .png --lr 0.0001 --epochs 100 --input_w 512 --input_h 512 --b 8 --input_channels 1
 
-1. Train the model.
-```
-python train.py --dataset <dataset name> --arch UNext --name <exp name> --img_ext .png --mask_ext .png --lr 0.0001 --epochs 500 --input_w 512 --input_h 512 --b 8
-```
-2. Evaluate.
-```
-python val.py --name <exp name>
-```
-
-### Acknowledgements:
-
-This code-base uses certain code-blocks and helper functions from [UNet++](https://github.com/4uiiurz1/pytorch-nested-unet), [Segformer](https://github.com/NVlabs/SegFormer), and [AS-MLP](https://github.com/svip-lab/AS-MLP). Naming credits to [Poojan](https://scholar.google.co.in/citations?user=9dhBHuAAAAAJ&hl=en).
-
-### Citation:
-```
-@article{valanarasu2022unext,
-  title={UNeXt: MLP-based Rapid Medical Image Segmentation Network},
-  author={Valanarasu, Jeya Maria Jose and Patel, Vishal M},
-  journal={arXiv preprint arXiv:2203.04967},
-  year={2022}
-}
-```
+testing:python val.py --name exp0
