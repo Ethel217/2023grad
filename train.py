@@ -14,13 +14,15 @@ from albumentations.core.composition import Compose, OneOf
 from sklearn.model_selection import train_test_split
 from torch.optim import lr_scheduler
 from tqdm import tqdm
-from albumentations import RandomRotate90,Resize
+from albumentations import RandomRotate90,Resize, Flip
 import archs
 import losses
 from dataset import Dataset
 from metrics import iou_score
 from utils import AverageMeter, str2bool
 from archs import UNext
+
+import time
 
 
 ARCH_NAMES = archs.__all__
@@ -191,6 +193,7 @@ def validate(config, val_loader, model, criterion):
 
 
 def main():
+    start_time = time.time()
     config = vars(parse_args())
 
     if config['name'] is None:
@@ -251,11 +254,11 @@ def main():
     img_ids = glob(os.path.join('inputs', config['dataset'], 'images', '*' + config['img_ext']))
     img_ids = [os.path.splitext(os.path.basename(p))[0] for p in img_ids]
 
-    train_img_ids, val_img_ids = train_test_split(img_ids, test_size=0.2, random_state=41)
+    train_img_ids, val_img_ids = train_test_split(img_ids, test_size=0.25, random_state=41)
 
     train_transform = Compose([
         RandomRotate90(),
-        transforms.Flip(),
+        Flip(),
         Resize(config['input_h'], config['input_w']),
         transforms.Normalize(),
     ])
@@ -349,6 +352,9 @@ def main():
             break
 
         torch.cuda.empty_cache()
+
+    end_time = time.time()
+    print("training time: %s min." % ((end_time - start_time) / 60.0))
 
 
 if __name__ == '__main__':
